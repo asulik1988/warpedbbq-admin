@@ -87,17 +87,30 @@ Enter number in "Current Stock" → Saves automatically
 
 ## 🗑️ Cache Management
 
-### Clear Cache
+### Development Cache (Local Testing)
 1. Go to Cache tab
-2. Click "🗑️ Clear Cache Now"
-3. Wait for confirmation
-4. Changes appear on main site in ~5 minutes
+2. Click "🔧 Clear Dev Cache"
+3. Changes appear immediately on localhost
+4. Use this when testing changes locally
 
-### When to Clear
+**When to use:**
+- Testing menu changes locally
+- Verifying inventory updates work
+- Testing cache behavior
+- Development workflow
+
+### Production Cache (Live Site)
+1. Go to Cache tab
+2. Click "🗑️ Clear Production Cache"
+3. Wait for confirmation
+4. Changes appear on warpedbbq.com in ~5 minutes
+
+**When to use:**
 - After adding/editing menu items
 - After changing inventory
 - After uploading new images
 - After updating schedules
+- Deploying changes to production
 
 ## 🖼️ Image Guidelines
 
