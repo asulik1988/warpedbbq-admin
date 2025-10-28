@@ -489,8 +489,10 @@ function renderBatchesTable() {
   }
 
   tbody.innerHTML = batches.map(batch => {
-    const pickupDate = new Date(batch.pickupDate).toLocaleDateString();
-    const cutoffDate = new Date(batch.cutoffDate).toLocaleString();
+    const pickupDate = new Date(batch.pickup_date || batch.pickupDate).toLocaleDateString();
+    const cutoffDate = new Date(batch.cutoff_date || batch.cutoffDate).toLocaleString();
+    const pickupTimeStart = batch.pickup_time_start || batch.pickupTimeStart || '';
+    const pickupTimeEnd = batch.pickup_time_end || batch.pickupTimeEnd || '';
     const statusBadge = {
       'open': 'badge-success',
       'closed': 'badge-warning',
@@ -501,7 +503,7 @@ function renderBatchesTable() {
       <tr>
         <td><strong>${batch.name}</strong></td>
         <td>${pickupDate}</td>
-        <td>${batch.pickupTimeStart} - ${batch.pickupTimeEnd}</td>
+        <td>${pickupTimeStart} - ${pickupTimeEnd}</td>
         <td>${cutoffDate}</td>
         <td>${batch.orderCount || 0}</td>
         <td><span class="badge ${statusBadge}">${batch.status}</span></td>
@@ -542,15 +544,15 @@ function editBatch(id) {
   document.getElementById('batchModalTitle').textContent = 'Edit Pickup Batch';
   document.getElementById('batchId').value = batch.id;
   document.getElementById('batchName').value = batch.name;
-  document.getElementById('pickupDate').value = batch.pickupDate;
-  document.getElementById('pickupTimeStart').value = batch.pickupTimeStart;
-  document.getElementById('pickupTimeEnd').value = batch.pickupTimeEnd;
+  document.getElementById('pickupDate').value = batch.pickup_date || batch.pickupDate;
+  document.getElementById('pickupTimeStart').value = batch.pickup_time_start || batch.pickupTimeStart;
+  document.getElementById('pickupTimeEnd').value = batch.pickup_time_end || batch.pickupTimeEnd;
 
   // Convert cutoffDate to local datetime for input
-  const cutoffDate = new Date(batch.cutoffDate);
+  const cutoffDate = new Date(batch.cutoff_date || batch.cutoffDate);
   document.getElementById('cutoffDate').value = cutoffDate.toISOString().slice(0, 16);
 
-  document.getElementById('maxCapacity').value = batch.maxCapacity || '';
+  document.getElementById('maxCapacity').value = batch.max_capacity || batch.maxCapacity || '';
   document.getElementById('batchStatus').value = batch.status;
 
   document.getElementById('batchModal').classList.add('active');
