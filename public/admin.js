@@ -425,14 +425,11 @@ async function loadSchedules() {
 }
 
 // Clear cache
-async function clearCache(environment = 'production') {
-  const envLabel = environment === 'dev' ? 'development' : 'production';
-  const statusDiv = environment === 'dev' ? 'devCacheStatus' : 'prodCacheStatus';
-
-  if (!confirm(`This will clear the ${envLabel} cache and update the site. Continue?`)) return;
+async function clearCache() {
+  if (!confirm('This will clear the cache and update the site. Continue?')) return;
 
   try {
-    const response = await fetch(`/api/admin/cache/purge?env=${environment}`, {
+    const response = await fetch('/api/admin/cache/purge', {
       method: 'POST',
       credentials: 'include'
     });
@@ -441,18 +438,18 @@ async function clearCache(environment = 'production') {
 
     const data = await response.json();
 
-    document.getElementById(statusDiv).innerHTML = `
+    document.getElementById('cacheStatus').innerHTML = `
       <div class="alert alert-success">
-        ${envLabel.charAt(0).toUpperCase() + envLabel.slice(1)} cache cleared successfully!<br>
+        Cache cleared successfully!<br>
         New cache version: ${data.data.cacheVersion}<br>
-        Environment: ${data.data.environment || envLabel}<br>
         Time: ${new Date(data.data.timestamp).toLocaleString()}
+        ${data.data.cloudflareCleared ? '<br>✅ Cloudflare CDN cache purged' : ''}
       </div>
     `;
 
-    showAlert(`${envLabel.charAt(0).toUpperCase() + envLabel.slice(1)} cache cleared successfully!`);
+    showAlert('Cache cleared successfully!');
 
   } catch (error) {
-    showAlert(`Error clearing ${envLabel} cache: ` + error.message, 'danger');
+    showAlert('Error clearing cache: ' + error.message, 'danger');
   }
 }

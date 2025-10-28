@@ -1,7 +1,6 @@
 /**
- * POST /api/admin/cache/purge?env=dev|production
+ * POST /api/admin/cache/purge
  * Clear CDN cache and increment cache version
- * Environment: dev (local) or production (remote)
  */
 
 function isAuthenticated(request) {
@@ -21,10 +20,6 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    // Get environment from query parameter (default to production)
-    const url = new URL(request.url);
-    const environment = url.searchParams.get('env') || 'production';
-
     // Increment cache version in database
     await env.DB.prepare(`
       UPDATE cache_version
@@ -39,9 +34,9 @@ export async function onRequestPost({ request, env }) {
       WHERE id = 1
     `).first();
 
-    // Only purge Cloudflare cache for production
+    // Purge Cloudflare cache via API if credentials are set
     let cloudflareCleared = false;
-    if (environment === 'production' && env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ZONE_ID) {
+    if (env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_ZONE_ID) {
       try {
         await fetch(`https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/purge_cache`, {
           method: 'POST',
@@ -62,12 +57,11 @@ export async function onRequestPost({ request, env }) {
 
     return new Response(JSON.stringify({
       success: true,
-      message: `${environment === 'dev' ? 'Development' : 'Production'} cache cleared successfully`,
+      message: 'Cache cleared successfully',
       data: {
-        environment,
         cacheVersion: result.version,
         timestamp: result.last_cleared,
-        cloudflareCleared: environment === 'production' ? cloudflareCleared : null
+        cloudflareCleared
       }
     }), {
       status: 200,
