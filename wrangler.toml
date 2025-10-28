@@ -17,6 +17,7 @@ bucket_name = "warpedbbq-site-bucket"
 [vars]
 SESSION_TIMEOUT = "86400" # 24 hours in seconds
 MAIN_SITE_URL = "https://warpedbbq.com" # For cache purging
+R2_PUBLIC_URL = "https://pub-your-hash-here.r2.dev" # Update after enabling R2 public access
 
 # Secrets (set with: wrangler secret put ADMIN_PASSWORD)
 # ADMIN_PASSWORD - Set this via CLI

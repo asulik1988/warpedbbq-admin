@@ -70,8 +70,9 @@ export async function onRequestPost({ request, env }) {
       }
     });
 
-    // Return URL
-    const imageUrl = `https://images.warpedbbq.com/${filename}`;
+    // Return URL using R2_PUBLIC_URL from environment
+    const baseUrl = env.R2_PUBLIC_URL || 'https://images.warpedbbq.com';
+    const imageUrl = `${baseUrl}/${filename}`;
 
     return new Response(JSON.stringify({
       success: true,
