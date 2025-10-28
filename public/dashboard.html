@@ -84,13 +84,23 @@
         </div>
 
         <div class="card">
-          <h3>Clear Cache</h3>
+          <h3>Development Cache</h3>
           <p style="color: var(--text-light); margin-bottom: 1.5rem;">
-            Clear the CDN cache to force the main site to fetch fresh menu data from the database.
-            Changes will appear on the site within a few minutes.
+            Clear the local development cache. Use this when testing changes locally.
+            Changes appear immediately on localhost.
           </p>
-          <button class="btn btn-warning" onclick="clearCache()">🗑️ Clear Cache Now</button>
-          <div id="cacheStatus" class="mt-2"></div>
+          <button class="btn btn-primary" onclick="clearCache('dev')">🔧 Clear Dev Cache</button>
+          <div id="devCacheStatus" class="mt-2"></div>
+        </div>
+
+        <div class="card">
+          <h3>Production Cache</h3>
+          <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+            Clear the production CDN cache to force the main site to fetch fresh menu data.
+            Changes will appear on warpedbbq.com within a few minutes.
+          </p>
+          <button class="btn btn-warning" onclick="clearCache('production')">🗑️ Clear Production Cache</button>
+          <div id="prodCacheStatus" class="mt-2"></div>
         </div>
       </section>
     </main>

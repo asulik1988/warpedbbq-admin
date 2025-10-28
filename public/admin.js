@@ -425,11 +425,14 @@ async function loadSchedules() {
 }
 
 // Clear cache
-async function clearCache() {
-  if (!confirm('This will clear the cache and update the main site. Continue?')) return;
+async function clearCache(environment = 'production') {
+  const envLabel = environment === 'dev' ? 'development' : 'production';
+  const statusDiv = environment === 'dev' ? 'devCacheStatus' : 'prodCacheStatus';
+
+  if (!confirm(`This will clear the ${envLabel} cache and update the site. Continue?`)) return;
 
   try {
-    const response = await fetch('/api/admin/cache/purge', {
+    const response = await fetch(`/api/admin/cache/purge?env=${environment}`, {
       method: 'POST',
       credentials: 'include'
     });
@@ -438,17 +441,18 @@ async function clearCache() {
 
     const data = await response.json();
 
-    document.getElementById('cacheStatus').innerHTML = `
+    document.getElementById(statusDiv).innerHTML = `
       <div class="alert alert-success">
-        Cache cleared successfully!<br>
+        ${envLabel.charAt(0).toUpperCase() + envLabel.slice(1)} cache cleared successfully!<br>
         New cache version: ${data.data.cacheVersion}<br>
+        Environment: ${data.data.environment || envLabel}<br>
         Time: ${new Date(data.data.timestamp).toLocaleString()}
       </div>
     `;
 
-    showAlert('Cache cleared successfully!');
+    showAlert(`${envLabel.charAt(0).toUpperCase() + envLabel.slice(1)} cache cleared successfully!`);
 
   } catch (error) {
-    showAlert('Error clearing cache: ' + error.message, 'danger');
+    showAlert(`Error clearing ${envLabel} cache: ` + error.message, 'danger');
   }
 }
