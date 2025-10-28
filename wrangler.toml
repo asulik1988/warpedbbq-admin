@@ -1,0 +1,24 @@
+name = "warpedbbq-admin"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "public"
+
+# D1 Database binding (same database as main site)
+[[d1_databases]]
+binding = "DB"
+database_name = "warpedbbq-site-backend"
+database_id = "dd89341c-b3f3-4e25-97ff-9d8f7d194887"
+
+# R2 bucket for images (same bucket as main site)
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "warpedbbq-site-bucket"
+
+# Environment variables
+[vars]
+SESSION_TIMEOUT = "86400" # 24 hours in seconds
+MAIN_SITE_URL = "https://warpedbbq.com" # For cache purging
+
+# Secrets (set with: wrangler secret put ADMIN_PASSWORD)
+# ADMIN_PASSWORD - Set this via CLI
+# CLOUDFLARE_API_TOKEN - For cache purging (optional)
+# CLOUDFLARE_ZONE_ID - For cache purging (optional)

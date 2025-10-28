@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Warped BBQ Admin</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>🔥 Warped BBQ</h2>
+      <nav>
+        <a href="#" class="active" data-section="menu">📝 Menu Items</a>
+        <a href="#" data-section="inventory">📦 Inventory</a>
+        <a href="#" data-section="schedules">📅 Schedules</a>
+        <a href="#" data-section="cache">🗑️ Cache</a>
+      </nav>
+      <div style="margin-top: auto; padding-top: 2rem;">
+        <button class="btn btn-secondary" style="width: 100%;" onclick="logout()">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div id="alert-container"></div>
+
+      <!-- Menu Items Section -->
+      <section id="section-menu">
+        <div class="header">
+          <h1>Menu Items</h1>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Add New Item</button>
+        </div>
+
+        <div class="card">
+          <div class="flex justify-between items-center mb-2">
+            <h3>All Items</h3>
+            <button class="btn btn-secondary" onclick="toggleReorderMode()">⇅ Reorder</button>
+          </div>
+
+          <div class="table-container">
+            <table id="menuTable">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Tag</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="menuTableBody">
+                <tr><td colspan="6" class="text-center">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Inventory Section -->
+      <section id="section-inventory" class="hidden">
+        <div class="header">
+          <h1>Inventory Management</h1>
+        </div>
+
+        <div id="inventoryGrid"></div>
+      </section>
+
+      <!-- Schedules Section -->
+      <section id="section-schedules" class="hidden">
+        <div class="header">
+          <h1>Availability Schedules</h1>
+        </div>
+
+        <div id="schedulesContainer"></div>
+      </section>
+
+      <!-- Cache Section -->
+      <section id="section-cache" class="hidden">
+        <div class="header">
+          <h1>Cache Management</h1>
+        </div>
+
+        <div class="card">
+          <h3>Clear Cache</h3>
+          <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+            Clear the CDN cache to force the main site to fetch fresh menu data from the database.
+            Changes will appear on the site within a few minutes.
+          </p>
+          <button class="btn btn-warning" onclick="clearCache()">🗑️ Clear Cache Now</button>
+          <div id="cacheStatus" class="mt-2"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Add/Edit Menu Item Modal -->
+  <div id="itemModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add Menu Item</h2>
+        <button class="close-modal" onclick="closeModal()">&times;</button>
+      </div>
+
+      <form id="itemForm">
+        <input type="hidden" id="itemId">
+
+        <div class="form-group">
+          <label for="title">Title *</label>
+          <input type="text" id="title" required>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description *</label>
+          <textarea id="description" required></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="category">Category *</label>
+            <select id="category" required>
+              <option value="meat">Meats</option>
+              <option value="side">Sides</option>
+              <option value="dessert">Dessert</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="tag">Tag</label>
+            <input type="text" id="tag" placeholder="e.g., Weekend special">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="displayOrder">Display Order</label>
+            <input type="number" id="displayOrder" min="1" value="1">
+          </div>
+
+          <div class="form-group">
+            <label for="isActive">Status</label>
+            <select id="isActive">
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="imageFile">Upload Image</label>
+          <input type="file" id="imageFile" accept="image/*" onchange="previewImage(event)">
+          <img id="imagePreview" class="image-preview hidden" alt="Preview">
+          <input type="hidden" id="imageUrl">
+        </div>
+
+        <div class="flex gap-2">
+          <button type="submit" class="btn btn-success">
+            <span id="saveText">Save</span>
+            <span id="saveLoading" class="loading hidden"></span>
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/admin.js"></script>
+</body>
+</html>

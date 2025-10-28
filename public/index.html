@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Warped BBQ</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <h1>🔥 Warped BBQ</h1>
+      <p>Admin Panel Login</p>
+
+      <div id="alert" class="alert alert-danger hidden"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            autofocus
+            placeholder="Enter admin password"
+          >
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          <span id="loginText">Login</span>
+          <span id="loginLoading" class="loading hidden"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const alert = document.getElementById('alert');
+    const loginText = document.getElementById('loginText');
+    const loginLoading = document.getElementById('loginLoading');
+
+    // Check if already logged in
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/admin/menu', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          window.location.href = '/dashboard.html';
+        }
+      } catch (error) {
+        // Not logged in, stay on login page
+      }
+    };
+
+    checkAuth();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const password = document.getElementById('password').value;
+
+      // Show loading
+      loginText.classList.add('hidden');
+      loginLoading.classList.remove('hidden');
+      alert.classList.add('hidden');
+
+      try {
+        const response = await fetch('/api/admin/auth', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          // Login successful, redirect to dashboard
+          window.location.href = '/dashboard.html';
+        } else {
+          // Login failed
+          throw new Error(data.error || 'Invalid password');
+        }
+
+      } catch (error) {
+        // Show error
+        alert.textContent = error.message;
+        alert.classList.remove('hidden');
+
+        // Reset form
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+
+      } finally {
+        // Hide loading
+        loginText.classList.remove('hidden');
+        loginLoading.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
