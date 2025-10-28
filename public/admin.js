@@ -54,6 +54,8 @@ document.querySelectorAll('.sidebar a').forEach(link => {
     // Load section data
     if (section === 'inventory') loadInventory();
     if (section === 'schedules') loadSchedules();
+    if (section === 'batches') loadBatches();
+    if (section === 'orders') loadOrders();
   });
 });
 
@@ -452,4 +454,259 @@ async function clearCache() {
   } catch (error) {
     showAlert('Error clearing cache: ' + error.message, 'danger');
   }
+}
+
+// ===== BATCH MANAGEMENT =====
+
+let batches = [];
+
+// Load batches
+async function loadBatches() {
+  try {
+    const response = await fetch('/api/admin/batches', {
+      credentials: 'include'
+    });
+
+    if (!response.ok) throw new Error('Failed to load batches');
+
+    const data = await response.json();
+    batches = data.data || [];
+
+    renderBatchesTable();
+
+  } catch (error) {
+    showAlert('Error loading batches: ' + error.message, 'danger');
+  }
+}
+
+// Render batches table
+function renderBatchesTable() {
+  const tbody = document.getElementById('batchesTableBody');
+
+  if (batches.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No batches found. Create your first batch!</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = batches.map(batch => {
+    const pickupDate = new Date(batch.pickupDate).toLocaleDateString();
+    const cutoffDate = new Date(batch.cutoffDate).toLocaleString();
+    const statusBadge = {
+      'open': 'badge-success',
+      'closed': 'badge-warning',
+      'fulfilled': 'badge-info'
+    }[batch.status] || 'badge-secondary';
+
+    return `
+      <tr>
+        <td><strong>${batch.name}</strong></td>
+        <td>${pickupDate}</td>
+        <td>${batch.pickupTimeStart} - ${batch.pickupTimeEnd}</td>
+        <td>${cutoffDate}</td>
+        <td>${batch.orderCount || 0}</td>
+        <td><span class="badge ${statusBadge}">${batch.status}</span></td>
+        <td>
+          <button class="btn btn-primary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;" onclick="editBatch(${batch.id})">Edit</button>
+          <button class="btn btn-danger" style="padding: 0.5rem 1rem;" onclick="deleteBatch(${batch.id})">Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Open batch modal
+function openBatchModal() {
+  document.getElementById('batchModalTitle').textContent = 'Create Pickup Batch';
+  document.getElementById('batchForm').reset();
+  document.getElementById('batchId').value = '';
+
+  // Set default cutoff date to 7 days from now
+  const now = new Date();
+  const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  document.getElementById('pickupDate').valueAsDate = sevenDaysLater;
+  document.getElementById('cutoffDate').value = now.toISOString().slice(0, 16);
+
+  document.getElementById('batchModal').classList.add('active');
+}
+
+// Close batch modal
+function closeBatchModal() {
+  document.getElementById('batchModal').classList.remove('active');
+}
+
+// Edit batch
+function editBatch(id) {
+  const batch = batches.find(b => b.id === id);
+  if (!batch) return;
+
+  document.getElementById('batchModalTitle').textContent = 'Edit Pickup Batch';
+  document.getElementById('batchId').value = batch.id;
+  document.getElementById('batchName').value = batch.name;
+  document.getElementById('pickupDate').value = batch.pickupDate;
+  document.getElementById('pickupTimeStart').value = batch.pickupTimeStart;
+  document.getElementById('pickupTimeEnd').value = batch.pickupTimeEnd;
+
+  // Convert cutoffDate to local datetime for input
+  const cutoffDate = new Date(batch.cutoffDate);
+  document.getElementById('cutoffDate').value = cutoffDate.toISOString().slice(0, 16);
+
+  document.getElementById('maxCapacity').value = batch.maxCapacity || '';
+  document.getElementById('batchStatus').value = batch.status;
+
+  document.getElementById('batchModal').classList.add('active');
+}
+
+// Save batch
+document.getElementById('batchForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const saveText = document.getElementById('batchSaveText');
+  const saveLoading = document.getElementById('batchSaveLoading');
+  saveText.classList.add('hidden');
+  saveLoading.classList.remove('hidden');
+
+  try {
+    const batchData = {
+      name: document.getElementById('batchName').value,
+      pickupDate: document.getElementById('pickupDate').value,
+      pickupTimeStart: document.getElementById('pickupTimeStart').value,
+      pickupTimeEnd: document.getElementById('pickupTimeEnd').value,
+      cutoffDate: new Date(document.getElementById('cutoffDate').value).toISOString(),
+      maxCapacity: document.getElementById('maxCapacity').value || null,
+      status: document.getElementById('batchStatus').value
+    };
+
+    const batchId = document.getElementById('batchId').value;
+    const method = batchId ? 'PUT' : 'POST';
+    const url = batchId ? `/api/admin/batches/${batchId}` : '/api/admin/batches';
+
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify(batchData)
+    });
+
+    if (!response.ok) throw new Error('Failed to save batch');
+
+    showAlert(batchId ? 'Batch updated successfully' : 'Batch created successfully');
+    closeBatchModal();
+    await loadBatches();
+
+  } catch (error) {
+    showAlert('Error saving batch: ' + error.message, 'danger');
+  } finally {
+    saveText.classList.remove('hidden');
+    saveLoading.classList.add('hidden');
+  }
+});
+
+// Delete batch
+async function deleteBatch(id) {
+  if (!confirm('Are you sure you want to delete this batch? This cannot be undone.')) return;
+
+  try {
+    const response = await fetch(`/api/admin/batches/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+
+    if (!response.ok) throw new Error('Failed to delete batch');
+
+    showAlert('Batch deleted successfully');
+    await loadBatches();
+
+  } catch (error) {
+    showAlert('Error deleting batch: ' + error.message, 'danger');
+  }
+}
+
+// ===== ORDER MANAGEMENT =====
+
+let orders = [];
+let allOrders = [];
+
+// Load orders
+async function loadOrders() {
+  try {
+    const response = await fetch('/api/admin/orders', {
+      credentials: 'include'
+    });
+
+    if (!response.ok) throw new Error('Failed to load orders');
+
+    const data = await response.json();
+    allOrders = data.data || [];
+    orders = allOrders;
+
+    // Populate batch filter
+    const batchFilter = document.getElementById('filterBatch');
+    const uniqueBatches = [...new Set(allOrders.map(o => o.batchName))];
+    batchFilter.innerHTML = '<option value="">All Batches</option>' +
+      uniqueBatches.map(name => `<option value="${name}">${name}</option>`).join('');
+
+    renderOrdersTable();
+
+  } catch (error) {
+    showAlert('Error loading orders: ' + error.message, 'danger');
+  }
+}
+
+// Filter orders
+function filterOrders() {
+  const batchFilter = document.getElementById('filterBatch').value;
+  const statusFilter = document.getElementById('filterStatus').value;
+
+  orders = allOrders.filter(order => {
+    const matchBatch = !batchFilter || order.batchName === batchFilter;
+    const matchStatus = !statusFilter || order.status === statusFilter;
+    return matchBatch && matchStatus;
+  });
+
+  renderOrdersTable();
+}
+
+// Render orders table
+function renderOrdersTable() {
+  const tbody = document.getElementById('ordersTableBody');
+
+  if (orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No orders found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = orders.map(order => {
+    const statusBadge = {
+      'pending': 'badge-warning',
+      'paid': 'badge-success',
+      'fulfilled': 'badge-info',
+      'cancelled': 'badge-danger'
+    }[order.status] || 'badge-secondary';
+
+    const createdDate = new Date(order.createdAt).toLocaleDateString();
+
+    return `
+      <tr>
+        <td><strong>#${order.id}</strong></td>
+        <td>${order.customerName}<br><small>${order.customerEmail}</small></td>
+        <td>${order.batchName}</td>
+        <td>$${parseFloat(order.total).toFixed(2)}</td>
+        <td><span class="badge ${statusBadge}">${order.status}</span></td>
+        <td>${createdDate}</td>
+        <td>
+          <button class="btn btn-primary" style="padding: 0.5rem 1rem;" onclick="viewOrderDetails(${order.id})">View</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// View order details (placeholder)
+function viewOrderDetails(orderId) {
+  const order = allOrders.find(o => o.id === orderId);
+  if (!order) return;
+
+  alert(`Order #${orderId}\n\nCustomer: ${order.customerName}\nEmail: ${order.customerEmail}\nTotal: $${order.total}\nStatus: ${order.status}\n\nFull order details coming soon!`);
 }

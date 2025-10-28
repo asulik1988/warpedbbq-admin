@@ -14,6 +14,8 @@
       <nav>
         <a href="#" class="active" data-section="menu">📝 Menu Items</a>
         <a href="#" data-section="inventory">📦 Inventory</a>
+        <a href="#" data-section="batches">📦 Pickup Batches</a>
+        <a href="#" data-section="orders">🛒 Orders</a>
         <a href="#" data-section="schedules">📅 Schedules</a>
         <a href="#" data-section="cache">🗑️ Cache</a>
       </nav>
@@ -66,6 +68,76 @@
         </div>
 
         <div id="inventoryGrid"></div>
+      </section>
+
+      <!-- Pickup Batches Section -->
+      <section id="section-batches" class="hidden">
+        <div class="header">
+          <h1>Pickup Batches</h1>
+          <button class="btn btn-primary" onclick="openBatchModal()">+ Create New Batch</button>
+        </div>
+
+        <div class="card">
+          <div class="table-container">
+            <table id="batchesTable">
+              <thead>
+                <tr>
+                  <th>Batch Name</th>
+                  <th>Pickup Date</th>
+                  <th>Pickup Time</th>
+                  <th>Cutoff Date</th>
+                  <th>Orders</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="batchesTableBody">
+                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Orders Section -->
+      <section id="section-orders" class="hidden">
+        <div class="header">
+          <h1>Customer Orders</h1>
+        </div>
+
+        <div class="card">
+          <div class="flex gap-2 mb-2">
+            <select id="filterBatch" onchange="filterOrders()" class="form-control">
+              <option value="">All Batches</option>
+            </select>
+            <select id="filterStatus" onchange="filterOrders()" class="form-control">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+              <option value="fulfilled">Fulfilled</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div class="table-container">
+            <table id="ordersTable">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Customer</th>
+                  <th>Batch</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody">
+                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- Schedules Section -->
@@ -163,6 +235,72 @@
             <span id="saveLoading" class="loading hidden"></span>
           </button>
           <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Batch Modal -->
+  <div id="batchModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="batchModalTitle">Create Pickup Batch</h2>
+        <button class="close-modal" onclick="closeBatchModal()">&times;</button>
+      </div>
+
+      <form id="batchForm">
+        <input type="hidden" id="batchId">
+
+        <div class="form-group">
+          <label for="batchName">Batch Name *</label>
+          <input type="text" id="batchName" placeholder="e.g., Weekend Pickup - Jan 15" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pickupDate">Pickup Date *</label>
+            <input type="date" id="pickupDate" required>
+          </div>
+
+          <div class="form-group">
+            <label for="pickupTimeStart">Pickup Start Time *</label>
+            <input type="time" id="pickupTimeStart" value="11:00" required>
+          </div>
+
+          <div class="form-group">
+            <label for="pickupTimeEnd">Pickup End Time *</label>
+            <input type="time" id="pickupTimeEnd" value="14:00" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cutoffDate">Order Cutoff Date *</label>
+            <input type="datetime-local" id="cutoffDate" required>
+            <small style="color: var(--text-light);">Orders will close at this date/time (1 week before pickup recommended)</small>
+          </div>
+
+          <div class="form-group">
+            <label for="maxCapacity">Max Capacity (Optional)</label>
+            <input type="number" id="maxCapacity" min="1" placeholder="Leave empty for unlimited">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="batchStatus">Status</label>
+          <select id="batchStatus">
+            <option value="open">Open</option>
+            <option value="closed">Closed</option>
+            <option value="fulfilled">Fulfilled</option>
+          </select>
+        </div>
+
+        <div class="flex gap-2">
+          <button type="submit" class="btn btn-success">
+            <span id="batchSaveText">Create Batch</span>
+            <span id="batchSaveLoading" class="loading hidden"></span>
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="closeBatchModal()">Cancel</button>
         </div>
       </form>
     </div>
