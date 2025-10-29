@@ -675,7 +675,7 @@ function renderOrdersTable() {
   const tbody = document.getElementById('ordersTableBody');
 
   if (orders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No orders found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center">No orders found</td></tr>';
     return;
   }
 
@@ -694,6 +694,8 @@ function renderOrdersTable() {
         <td><strong>#${order.id}</strong></td>
         <td>${order.customerName}<br><small>${order.customerEmail}</small></td>
         <td>${order.batchName}</td>
+        <td>$${parseFloat(order.subtotal).toFixed(2)}</td>
+        <td>$${parseFloat(order.tax).toFixed(2)}</td>
         <td>$${parseFloat(order.total).toFixed(2)}</td>
         <td><span class="badge ${statusBadge}">${order.status}</span></td>
         <td>${createdDate}</td>
@@ -710,5 +712,5 @@ function viewOrderDetails(orderId) {
   const order = allOrders.find(o => o.id === orderId);
   if (!order) return;
 
-  alert(`Order #${orderId}\n\nCustomer: ${order.customerName}\nEmail: ${order.customerEmail}\nTotal: $${order.total}\nStatus: ${order.status}\n\nFull order details coming soon!`);
+  alert(`Order #${orderId}\n\nCustomer: ${order.customerName}\nEmail: ${order.customerEmail}\n\nSubtotal: $${parseFloat(order.subtotal).toFixed(2)}\nTax (7.35%): $${parseFloat(order.tax).toFixed(2)}\nTotal: $${parseFloat(order.total).toFixed(2)}\n\nStatus: ${order.status}\n\nFull order details coming soon!`);
 }
